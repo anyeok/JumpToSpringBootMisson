@@ -19,6 +19,10 @@ public class UserCreateForm {
     @NotEmpty(message = "비밀번호 확인은 필수항목입니다.")
     private String password2;
 
+    @Size(min = 2, max = 10)
+    @NotEmpty(message = "닉네임은 필수항목입니다.")
+    private String nickname;
+
     @NotEmpty(message = "이메일은 필수항목입니다.")
     @Email
     private String email;
