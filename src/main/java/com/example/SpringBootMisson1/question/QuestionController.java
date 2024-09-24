@@ -33,6 +33,10 @@ public class QuestionController {
 
     @GetMapping(value = "/detail/{id}")
     public String detail(Model model, @PathVariable("id") Integer id, AnswerForm answerForm) {
+        if (!this.questionService.hasUserViewed(id)) {
+            this.questionService.views(id); // 조회수 증가
+            this.questionService.markQuestionAsViewed(id); // 조회 기록 저장
+        }
         Question question = this.questionService.getQuestion(id);
         model.addAttribute("question", question);
         return "question_detail";

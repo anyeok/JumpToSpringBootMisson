@@ -4,6 +4,7 @@ import com.example.SpringBootMisson1.DataNotFoundException;
 import com.example.SpringBootMisson1.answer.Answer;
 import com.example.SpringBootMisson1.user.SiteUser;
 import jakarta.persistence.criteria.*;
+import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,11 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @RequiredArgsConstructor
 @Service
@@ -82,5 +83,32 @@ public class QuestionService {
     public void vote(Question question, SiteUser siteUser) {
         question.getVoter().add(siteUser);
         this.questionRepository.save(question);
+    }
+
+    public void views(Integer id) {
+        Question question = getQuestion(id);
+        question.setViews(question.getViews() + 1);
+        questionRepository.save(question);
+    }
+
+    public boolean hasUserViewed(Integer id) {
+        HttpSession session = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getSession();
+        Object viewedQuestions = session.getAttribute("viewedQuestions");
+
+        if (viewedQuestions == null) {
+            session.setAttribute("viewedQuestions", new HashSet<Integer>());
+            viewedQuestions = session.getAttribute("viewedQuestions");
+        }
+
+        Set<Integer> viewedSet = (Set<Integer>) viewedQuestions;
+        return viewedSet.contains(id);
+    }
+
+    public void markQuestionAsViewed(Integer id) {
+        HttpSession session = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getSession();
+        Set<Integer> viewedSet = (Set<Integer>) session.getAttribute("viewedQuestions");
+
+        viewedSet.add(id);
+        session.setAttribute("viewedQuestions", viewedSet);
     }
 }
