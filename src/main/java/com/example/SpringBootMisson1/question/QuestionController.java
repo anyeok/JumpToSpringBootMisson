@@ -3,6 +3,8 @@ package com.example.SpringBootMisson1.question;
 import com.example.SpringBootMisson1.answer.AnswerForm;
 import com.example.SpringBootMisson1.user.SiteUser;
 import com.example.SpringBootMisson1.user.UserService;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -32,10 +34,10 @@ public class QuestionController {
     }
 
     @GetMapping(value = "/detail/{id}")
-    public String detail(Model model, @PathVariable("id") Integer id, AnswerForm answerForm) {
-        if (!this.questionService.hasUserViewed(id)) {
+    public String detail(Model model, @PathVariable("id") Integer id, AnswerForm answerForm, HttpServletRequest request, HttpServletResponse response) {
+        if (!this.questionService.hasUserViewed(id, request)) {
             this.questionService.views(id); // 조회수 증가
-            this.questionService.markQuestionAsViewed(id); // 조회 기록 저장
+            this.questionService.markQuestionAsViewed(id, response, request); // 조회 기록 저장
         }
         Question question = this.questionService.getQuestion(id);
         model.addAttribute("question", question);

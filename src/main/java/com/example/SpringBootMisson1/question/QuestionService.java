@@ -4,7 +4,9 @@ import com.example.SpringBootMisson1.DataNotFoundException;
 import com.example.SpringBootMisson1.answer.Answer;
 import com.example.SpringBootMisson1.user.SiteUser;
 import jakarta.persistence.criteria.*;
-import jakarta.servlet.http.HttpSession;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -12,9 +14,10 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -91,24 +94,67 @@ public class QuestionService {
         questionRepository.save(question);
     }
 
-    public boolean hasUserViewed(Integer id) {
-        HttpSession session = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getSession();
-        Object viewedQuestions = session.getAttribute("viewedQuestions");
-
-        if (viewedQuestions == null) {
-            session.setAttribute("viewedQuestions", new HashSet<Integer>());
-            viewedQuestions = session.getAttribute("viewedQuestions");
+    public boolean hasUserViewed(Integer id, HttpServletRequest request) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("viewedQuestions")) {
+                    String cookieValue = cookie.getValue();
+                    if (cookieValue != null && !cookieValue.isEmpty()) {
+                        try {
+                            String[] viewedIds = URLDecoder.decode(cookieValue, "UTF-8").split(",");
+                            Set<Integer> viewedSet = new HashSet<>();
+                            for (String viewedId : viewedIds) {
+                                if (!viewedId.isEmpty() && viewedId.matches("\\d+")) { // 숫자만 체크
+                                    viewedSet.add(Integer.parseInt(viewedId));
+                                }
+                            }
+                            return viewedSet.contains(id);
+                        } catch (Exception e) {
+                            System.err.println("Error parsing viewed IDs: " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
         }
-
-        Set<Integer> viewedSet = (Set<Integer>) viewedQuestions;
-        return viewedSet.contains(id);
+        return false;
     }
 
-    public void markQuestionAsViewed(Integer id) {
-        HttpSession session = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes()).getRequest().getSession();
-        Set<Integer> viewedSet = (Set<Integer>) session.getAttribute("viewedQuestions");
+    public void markQuestionAsViewed(Integer id, HttpServletResponse response, HttpServletRequest request) {
+        try {
+            // 쿠키에서 현재 본 질문 ID 목록을 가져옴
+            String viewedQuestions = "";
+            Cookie[] cookies = request.getCookies();
+            if (cookies != null) {
+                for (Cookie cookie : cookies) {
+                    if (cookie.getName().equals("viewedQuestions")) {
+                        viewedQuestions = cookie.getValue();
+                        break; // 쿠키 찾으면 바로 탈출
+                    }
+                }
+            }
 
-        viewedSet.add(id);
-        session.setAttribute("viewedQuestions", viewedSet);
+            // 본 질문 ID 목록에 새로운 ID 추가
+            Set<Integer> viewedSet = new HashSet<>();
+            if (!viewedQuestions.isEmpty()) {
+                for (String viewedId : viewedQuestions.split(",")) {
+                    if (viewedId.matches("\\d+")) { // 숫자만 체크
+                        viewedSet.add(Integer.parseInt(viewedId));
+                    }
+                }
+            }
+            viewedSet.add(id);
+            String updatedViewedQuestions = String.join(",", viewedSet.stream().map(String::valueOf).toArray(String[]::new));
+
+            // 쿠키에 저장
+            Cookie cookie = new Cookie("viewedQuestions", URLEncoder.encode(updatedViewedQuestions, "UTF-8"));
+            cookie.setMaxAge(60 * 60 * 24); // 1일 동안 유효
+            cookie.setPath("/"); // 모든 경로에서 유효
+            response.addCookie(cookie);
+        } catch (UnsupportedEncodingException e) {
+            System.err.println("Error encoding cookie value: " + e.getMessage());
+            e.printStackTrace(); // 예외 처리
+        }
     }
 }
