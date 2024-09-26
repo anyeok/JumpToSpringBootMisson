@@ -1,0 +1,24 @@
+<html layout:decorate="~{layout}">
+<div layout:fragment="content" class="container my-3">
+    <h1>프로필</h1>
+    <table class="table">
+        <thead>
+        <tr>
+            <th>아이디</th>
+            <th>닉네임</th>
+            <th>이메일</th>
+        </tr>
+        </thead>
+        <tbody>
+        <th:block th:each="profile : ${profileList}">
+            <tr>
+                <td><span th:if="${profile.author != null}" th:text="${profile.author.username}"></span></td>
+                <td><span th:if="${profile.author != null}" th:text="${profile.author.nickname}"></span></td>
+                <td><span th:if="${profile.author != null}" th:text="${profile.author.email}"></span></td>
+            </tr>
+        </th:block>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>
