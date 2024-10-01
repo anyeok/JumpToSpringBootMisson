@@ -2,9 +2,11 @@ package com.example.SpringBootMisson1.user;
 
 import com.example.SpringBootMisson1.DataNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @RequiredArgsConstructor
@@ -31,6 +33,9 @@ public class UserService {
             throw new DataNotFoundException("siteuser not found");
         }
     }
+    public Optional<SiteUser> getUser(Long id) {
+        return userRepository.findById(id);
+    }
 
     public SiteUser getUserId(Long id) {
         Optional<SiteUser> siteUser = this.userRepository.findById(id);
@@ -39,5 +44,14 @@ public class UserService {
         } else {
             throw new DataNotFoundException("siteuser not found");
         }
+    }
+
+    public SiteUser findUserById(Long id) {
+        return userRepository.findById(id)
+                .orElseThrow(() -> new UsernameNotFoundException("사용자를 찾을 수 없습니다."));
+    }
+
+    public List<SiteUser> getList() {
+        return this.userRepository.findAll();
     }
 }
