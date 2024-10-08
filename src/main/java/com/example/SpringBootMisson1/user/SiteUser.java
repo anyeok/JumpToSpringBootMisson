@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,4 +26,9 @@ public class SiteUser {
 
     @Column(unique = true)
     private String email;
+
+    private LocalDateTime modifyDate;
+
+    private String password1;
+    private String password2;
 }

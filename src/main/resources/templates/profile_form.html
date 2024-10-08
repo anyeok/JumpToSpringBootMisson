@@ -1,0 +1,26 @@
+<html layout:decorate="~{layout}">
+<div layout:fragment="content" class="container">
+    <h5 class="my-3 border-bottom pb-2">비밀번호 수정</h5>
+    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+    <form th:action="@{/user/profile/modifypassword/{id}(id=${siteUser.id})}" th:object="${passwordForm}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="mb-3">
+            <input type="password" th:field="*{password1}" placeholder="비밀번호" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+            <input type="password" th:field="*{password2}" placeholder="비밀번호 확인" class="form-control" required/>
+        </div>
+        <button type="submit" class="btn btn-primary">비밀번호 수정하기</button>
+    </form>
+
+    <h5 class="my-3 border-bottom pb-2">닉네임 수정</h5>
+    <form th:action="@{/user/profile/modifynickname/{id}(id=${siteUser.id})}" th:object="${siteUser}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="mb-3">
+            <label for="nickname" class="form-label">닉네임</label>
+            <textarea th:field="*{nickname}" class="form-control" rows="10" required></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">닉네임 수정하기</button>
+    </form>
+</div>
+</html>

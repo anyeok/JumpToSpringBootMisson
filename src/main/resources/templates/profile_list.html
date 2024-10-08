@@ -7,7 +7,7 @@
     <h1>프로필 정보</h1>
     <div class="row my-3">
         <div class="col-6">
-            <a th:href="@{/profile/modify}" class="btn btn-primary">프로필 수정하기</a>
+            <a th:href="@{/user/profile/modifypassword/{id}(id=${user.id})}" class="btn btn-primary">프로필 수정하기</a>
         </div>
     </div>
     <table class="table">
@@ -19,7 +19,7 @@
         </tr>
         </thead>
         <tbody>
-        <tr th:each="user : ${userList}">
+        <tr th:each="user : ${user}">
             <td th:text="${user.username}"></td>
             <td th:text="${user.nickname}"></td>
             <td th:text="${user.email}"></td>
